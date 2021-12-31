@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      COV_URL: 'https://coverity.cdk.com:8443'
+      COV_URL: 'http://c04pghalm371.dswh.ds.adp.com:8080/'
       COV_USER: 'padidams'
       COVERITY_PASSPHRASE: '0693720B48F04A3A2136EA62924C01A3'
       CSA: cov-analysis-linux64-2020.12
