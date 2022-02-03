@@ -1,0 +1,38 @@
+name: GitHub Actions Demo
+on: [push]
+jobs:
+  Coverity:
+
+    runs-on: self-hosted
+
+    env:
+      COV_URL: 'http://c04pghalm371.dswh.ds.adp.com:8080/'
+      COV_USER: 'padidams'
+      COVERITY_PASSPHRASE: '0693720B48F04A3A2136EA62924C01A3'
+      CSA: cov-analysis-linux64-2020.12
+      COVERITY_PROJECT: insecure-bank
+      BLDCMD: mvn -B clean compile
+      CHECKERS: --webapp-security
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-java@v1
+      with:
+        java-version: 11
+
+    - name: Coverity Download
+      run: |
+        curl -fLsS --user $COV_USER:$COVERITY_PASSPHRASE $COV_URL/downloadFile.htm?fn=$CSA.tar.gz | tar -C /tmp -xzf -
+        curl -fLsS --user $COV_USER:$COVERITY_PASSPHRASE -o /tmp/$CSA/bin/license.dat $COV_URL/downloadFile.htm?fn=license.dat
+        /tmp/$CSA/bin/cov-configure --java
+
+    - name: Coverity Full Scan
+      if: ${{ github.event_name != 'pull_request' }}
+      run: |
+        export PATH=$PATH:/tmp/$CSA/bin
+        set -x
+        cov-build --dir idir --fs-capture-search $GITHUB_WORKSPACE $BLDCMD
+        cov-analyze --dir idir --ticker-mode none --strip-path $GITHUB_WORKSPACE $CHECKERS
+        cov-commit-defects --dir idir --ticker-mode none --url $COV_URL --stream $COVERITY_PROJECT-${GITHUB_REF##*/} --scm git \
+          --description $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID --target $RUNNER_OS --version $GITHUB_SHA
+
