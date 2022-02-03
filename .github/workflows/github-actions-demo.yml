@@ -3,7 +3,7 @@ on: [push]
 jobs:
   Coverity:
 
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     env:
       COV_URL: 'http://c04pghalm371.dswh.ds.adp.com:8080/'
